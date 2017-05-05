@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="app">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+
+    <script src="angular.min.js"></script>
+    <script src="app.js"></script>
+    <title>Pizza API Website</title>
+
+    <style>
+        * {
+            padding: 0;
+            margin: 0;
+            box-sizing: border-box;
+        }
+        
+        ul {
+            list-style-position: inside;
+        }
+        
+        .pizzas {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            float: left;
+            width: 60%;
+        }
+        
+        .pizzas>* {
+            padding: 20px;
+        }
+        
+        .order {
+            border: 1px solid grey;
+            padding: 10px;
+            float: right;
+            width: 40%;
+        }
+    </style>
+</head>
+
+<body ng-controller="MainController">
+
+    <form name="form" ng-submit="login()" ng-if="!currentUser.access_token" role="form">
+        <h1>Login</h1>
+        <div>
+            <label for="username">Username/email:</label>
+            <input type="text" name="username" id="username" ng-model="loginUserModel.username">
+        </div>
+
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" ng-model="loginUserModel.password">
+        </div>
+
+        <input type="submit">
+    </form>
+
+    <form name="form" ng-submit="register()" ng-if="!currentUser.access_token" role="form">
+        <h1>Register</h1>
+        <div>
+            <label for="username">Username/email:</label>
+            <input type="text" name="username" id="username" ng-model="registerUserModel.username">
+        </div>
+        <div>
+            <label for="password">Password:</label>
+            <input type="password" name="password" id="password" ng-model="registerUserModel.password">
+        </div>
+        <div>
+            <label for="confirmPassword">Confirm Password:</label>
+            <input type="password" name="confirmPassword" id="confirmPassword" ng-model="registerUserModel.confirmPassword">
+        </div>
+        <input type="submit">
+    </form>
+
+    <div ng-if="currentUser.access_token">
+        <h3>Logged in: {{ currentUser.userName }}</h3>
+        <a href="#" ng-click="logout()">Logout</a>
+    </div>
+
+    <div ng-if="!state.checkout">
+        <h1>Pizzas</h1>
+        <div class="pizzas">
+            <div ng-repeat="pizza in pizzas">
+                <h2>{{ pizza.Name }} ({{ pizza.Size }})</h1>
+
+                    <h3>Toppings:</h3>
+                    <ul>
+                        <li ng-repeat="topping in pizza.Toppings">{{ topping.Name }}</li>
+                    </ul>
+
+                    <p>Price: {{ pizza.Price | currency }}</p>
+
+                    <button ng-click="addToCart(pizza)">Add to Cart</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="order" ng-if="!state.checkout">
+        <h2>Order</h2>
+
+        <div class="orderItems" ng-if="cart">
+            <div ng-repeat="item in cart.OrderItems">
+                <h3>Pizza: {{ item.Pizza.Name }}</h3>
+                <p>Size: {{ item.Pizza.Size }}</p>
+                <ul>
+                    <li ng-repeat="topping in item.Pizza.Toppings">{{ topping.Name }}</li>
+                </ul>
+                <p>Price: {{ item.Price | currency }}</p>
+                <button ng-click="removeFromCart(item)">Remove from cart</button>
+            </div>
+
+            <h3>Total: {{ cart.Price | currency }}</h3>
+
+            <button ng-click="state.checkout = true" ng-if="cart.OrderItems.length > 0">Checkout</button>
+        </div>
+
+        <button ng-if="!cart">New order</button>
+    </div>
+
+    <div class="checkout" ng-if="state.checkout">
+        <h2>Checkout</h2>
+
+        <div class="orderItems pizzas">
+            <div ng-repeat="item in cart.OrderItems">
+                <h3>Pizza: {{ item.Pizza.Name }}</h3>
+                <p>Size: {{ item.Pizza.Size }}</p>
+                <ul>
+                    <li ng-repeat="topping in item.Pizza.Toppings">{{ topping.Name }}</li>
+                </ul>
+                <p>Price: {{ item.Price | currency }}</p>
+            </div>
+        </div>
+
+        <h3>Total: {{ cart.Price | currency }}</h3>
+
+        <button ng-click="submitOrder()">Submit</button>
+
+        <p>{{ errorMessage }}</p>
+
+    </div>
+
+
+
+
+</body>
+
+</html>
