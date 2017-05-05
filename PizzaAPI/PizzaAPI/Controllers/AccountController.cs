@@ -16,6 +16,7 @@ using Microsoft.Owin.Security.OAuth;
 using PizzaAPI.Models;
 using PizzaAPI.Providers;
 using PizzaAPI.Results;
+using System.Web.Http.Cors;
 
 namespace PizzaAPI.Controllers
 {

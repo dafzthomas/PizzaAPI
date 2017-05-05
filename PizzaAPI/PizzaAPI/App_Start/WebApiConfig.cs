@@ -6,6 +6,7 @@ using System.Web.Http;
 using Microsoft.Owin.Security.OAuth;
 using Newtonsoft.Json.Serialization;
 using System.Net.Http.Headers;
+using System.Web.Http.Cors;
 
 namespace PizzaAPI
 {
@@ -13,6 +14,8 @@ namespace PizzaAPI
     {
         public static void Register(HttpConfiguration config)
         {
+            
+
             // Web API configuration and services
             // Configure Web API to use only bearer token authentication.
             config.SuppressDefaultHostAuthentication();
@@ -20,6 +23,8 @@ namespace PizzaAPI
 
             // Web API routes
             config.MapHttpAttributeRoutes();
+
+            config.EnableCors();
 
             config.Routes.MapHttpRoute(
                 name: "DefaultApi",

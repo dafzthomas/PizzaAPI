@@ -7,6 +7,5 @@ namespace PizzaAPI.Models {
         public DbSet<Topping> Toppings { get; set; }
         public DbSet<Order> Orders { get; set; }
         public DbSet<OrderItem> OrderItems { get; set; }
-        
     }
 }

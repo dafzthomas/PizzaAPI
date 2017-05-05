@@ -11,11 +11,13 @@ using System.Web.Http;
 using System.Web.Http.Description;
 using PizzaAPI.Models;
 using PizzaAPI.Models.Helpers;
+using System.Web.Http.Cors;
 
 namespace PizzaAPI.Controllers
 {
     public class PizzasController : ApiController
     {
+        
         private PizzaOrderContext db = new PizzaOrderContext();
 
         // GET: api/Pizzas
@@ -43,10 +45,63 @@ namespace PizzaAPI.Controllers
             return Ok(pizza);
         }
 
-        [Route("{value}")]
-        public IHttpActionResult GetParam(string value)
+        // POST api/AddToCart
+        [HttpPost]
+        [Route("api/AddToCart")]
+        [ResponseType(typeof(Order))]
+        public IHttpActionResult AddToCart(ClientViewModel clientModel)
         {
-            return Ok(new[] { value, "Returned as get param" });
+            Order order = new Order(clientModel.order);
+
+            OrderItem orderItem = new OrderItem();
+            orderItem.Pizza = db.Pizzas.Find(clientModel.pizzaId);
+            orderItem.Price = orderItem.Pizza.Price;
+
+            if (clientModel.extraToppings != null)
+            {
+                foreach(Topping topping in clientModel.extraToppings)
+                {
+                    Topping t = db.Toppings.Find(topping.ToppingId);
+                    orderItem.ExtraToppings.Add(t);
+                    orderItem.Price += t.Price;
+                }
+            }
+
+            order.OrderItems.Add(orderItem);
+            order.Price += orderItem.Price;
+
+            return Ok(order);
+        }
+
+        [HttpPut]
+        [Route("api/RemoveFromCart")]
+        [ResponseType(typeof(Order))]
+        public IHttpActionResult RemoveFromCart(ClientViewModel clientModel)
+        {
+            Order order = new Order(clientModel.order);
+            Pizza pizza = db.Pizzas.Find(clientModel.pizzaId);
+
+
+            var itemToRemove = order.OrderItems.Single(r => r.OrderItemId == clientModel.orderItem.OrderItemId);
+
+            order.OrderItems.Remove(itemToRemove);
+            order.Price -= itemToRemove.Price;
+            
+            return Ok(order);
+        }
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/SubmitOrder")]
+        [ResponseType(typeof(Order))]
+        public IHttpActionResult SubmitOrder(ClientViewModel clientModel)
+        {
+            Order order = new Order(clientModel.order);
+            string userId = RequestContext.Principal.Identity.Name;
+
+            //CartHelper.Submit(userId, order);
+
+            return Ok(order);
         }
 
         //// PUT: api/Pizzas/5

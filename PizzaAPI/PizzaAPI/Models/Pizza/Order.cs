@@ -6,10 +6,31 @@ namespace PizzaAPI.Models
 {
     public class Order
     {
-        public Order()
+        public Order(Order order)
         {
-            OrderItems = new List<OrderItem>();
-            Price = 0;
+            if (order != null)
+            {
+                List<OrderItem> orderItems = new List<OrderItem>();
+
+                if (order.OrderItems != null && order.OrderItems.Count > 0)
+                {
+                    foreach (OrderItem item in order.OrderItems)
+                    {
+                        orderItems.Add(item);
+                    }
+                }
+
+
+                OrderItems = orderItems;
+                Price = order.Price;
+                Discount = order.Discount;
+                CurrentVoucher = order.CurrentVoucher;
+                Delivery = order.Delivery;
+            } else
+            {
+                OrderItems = new List<OrderItem>();
+            }
+            
         }
 
         [Key]
