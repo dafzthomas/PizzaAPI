@@ -212,14 +212,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="App_Start\BundleConfig.cs" />
     <Compile Include="App_Start\FilterConfig.cs" />
     <Compile Include="App_Start\IdentityConfig.cs" />
     <Compile Include="App_Start\RouteConfig.cs" />
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
-    <Compile Include="Controllers\PizzasController.cs" />
+    <Compile Include="Controllers\v1\OrdersController.cs" />
+    <Compile Include="Controllers\v1\PizzasController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
@@ -229,6 +229,8 @@
     <Compile Include="Models\Helpers\ClientViewModel.cs" />
     <Compile Include="Models\Helpers\CartHelper.cs" />
     <Compile Include="Models\Helpers\DatabaseContextHelper.cs" />
+    <Compile Include="Models\Helpers\OrderItemViewModel.cs" />
+    <Compile Include="Models\Helpers\OrderViewModel.cs" />
     <Compile Include="Models\IdentityModels.cs" />
     <Compile Include="Models\Helpers\PizzaViewModel.cs" />
     <Compile Include="Models\Pizza\Order.cs" />

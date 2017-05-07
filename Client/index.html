@@ -16,11 +16,11 @@
             margin: 0;
             box-sizing: border-box;
         }
-        
+
         ul {
             list-style-position: inside;
         }
-        
+
         .pizzas {
             display: flex;
             justify-content: space-between;
@@ -28,13 +28,25 @@
             float: left;
             width: 60%;
         }
-        
+
         .pizzas>* {
             padding: 20px;
         }
-        
+
         .order {
             border: 1px solid grey;
+            padding: 10px;
+            float: right;
+            width: 40%;
+        }
+
+        .orderItem {
+            padding: 5px 0;
+            border-bottom: 1px dashed grey;
+        }
+
+        .orderHistoryItem {
+            border: 1px dashed grey;
             padding: 10px;
             float: right;
             width: 40%;
@@ -119,6 +131,20 @@
         </div>
 
         <button ng-if="!cart">New order</button>
+    </div>
+
+    <div ng-if="!state.checkout && currentUser.access_token">
+        <h1>Order History</h1>
+        <div class="orderHistoryItem" ng-repeat="order in currentUser.orders">
+            <h2>Order: {{ order.OrderId }}</h1>
+
+                <h3>Order Items:</h3>
+                <div class="orderItem" ng-repeat="orderItem in order.OrderItems">
+                    <p>Pizza: {{ orderItem.Pizza.Name}}</p>
+                </div>
+
+                <h3>Price: {{ order.Price | currency }}</h3>
+        </div>
     </div>
 
     <div class="checkout" ng-if="state.checkout">

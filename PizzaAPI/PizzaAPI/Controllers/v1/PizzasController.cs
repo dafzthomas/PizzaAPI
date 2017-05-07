@@ -19,8 +19,10 @@ namespace PizzaAPI.Controllers
     {
         
         private PizzaOrderContext db = new PizzaOrderContext();
-
-        // GET: api/Pizzas
+        
+        [HttpGet]
+        [Route("api/v1/Pizzas")]
+        [ResponseType(typeof(List<Pizza>))]
         public IHttpActionResult GetPizzas()
         {
             List<PizzaViewModel> pizzas = new List<PizzaViewModel>();
@@ -31,8 +33,8 @@ namespace PizzaAPI.Controllers
             return Ok(pizzas);
         }
 
-        // GET: api/Pizzas/5
-        [Route("api/Pizzas/{id}")]
+        [HttpGet]
+        [Route("api/v1/Pizzas/{id}")]
         [ResponseType(typeof(Pizza))]
         public async Task<IHttpActionResult> GetPizza(int id)
         {
@@ -44,10 +46,9 @@ namespace PizzaAPI.Controllers
 
             return Ok(pizza);
         }
-
-        // POST api/AddToCart
+        
         [HttpPost]
-        [Route("api/AddToCart")]
+        [Route("api/v1/AddToCart")]
         [ResponseType(typeof(Order))]
         public IHttpActionResult AddToCart(ClientViewModel clientModel)
         {
@@ -74,7 +75,7 @@ namespace PizzaAPI.Controllers
         }
 
         [HttpPut]
-        [Route("api/RemoveFromCart")]
+        [Route("api/v1/RemoveFromCart")]
         [ResponseType(typeof(Order))]
         public IHttpActionResult RemoveFromCart(ClientViewModel clientModel)
         {
@@ -92,83 +93,17 @@ namespace PizzaAPI.Controllers
 
         [Authorize]
         [HttpPost]
-        [Route("api/SubmitOrder")]
+        [Route("api/v1/SubmitOrder")]
         [ResponseType(typeof(Order))]
         public IHttpActionResult SubmitOrder(ClientViewModel clientModel)
         {
             Order order = new Order(clientModel.order);
             string userId = RequestContext.Principal.Identity.Name;
 
-            //CartHelper.Submit(userId, order);
+            CartHelper.Submit(userId, order);
 
             return Ok(order);
         }
-
-        //// PUT: api/Pizzas/5
-        //[ResponseType(typeof(void))]
-        //public async Task<IHttpActionResult> PutPizza(int id, Pizza pizza)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    if (id != pizza.PizzaId)
-        //    {
-        //        return BadRequest();
-        //    }
-
-        //    db.Entry(pizza).State = EntityState.Modified;
-
-        //    try
-        //    {
-        //        await db.SaveChangesAsync();
-        //    }
-        //    catch (DbUpdateConcurrencyException)
-        //    {
-        //        if (!PizzaExists(id))
-        //        {
-        //            return NotFound();
-        //        }
-        //        else
-        //        {
-        //            throw;
-        //        }
-        //    }
-
-        //    return StatusCode(HttpStatusCode.NoContent);
-        //}
-
-        //// POST: api/Pizzas
-        //[ResponseType(typeof(Pizza))]
-        //public async Task<IHttpActionResult> PostPizza(Pizza pizza)
-        //{
-        //    if (!ModelState.IsValid)
-        //    {
-        //        return BadRequest(ModelState);
-        //    }
-
-        //    db.Pizzas.Add(pizza);
-        //    await db.SaveChangesAsync();
-
-        //    return CreatedAtRoute("DefaultApi", new { id = pizza.PizzaId }, pizza);
-        //}
-
-        //// DELETE: api/Pizzas/5
-        //[ResponseType(typeof(Pizza))]
-        //public async Task<IHttpActionResult> DeletePizza(int id)
-        //{
-        //    Pizza pizza = await db.Pizzas.FindAsync(id);
-        //    if (pizza == null)
-        //    {
-        //        return NotFound();
-        //    }
-
-        //    db.Pizzas.Remove(pizza);
-        //    await db.SaveChangesAsync();
-
-        //    return Ok(pizza);
-        //}
 
         protected override void Dispose(bool disposing)
         {
@@ -177,11 +112,6 @@ namespace PizzaAPI.Controllers
                 db.Dispose();
             }
             base.Dispose(disposing);
-        }
-
-        private bool PizzaExists(int id)
-        {
-            return db.Pizzas.Count(e => e.PizzaId == id) > 0;
         }
     }
 }

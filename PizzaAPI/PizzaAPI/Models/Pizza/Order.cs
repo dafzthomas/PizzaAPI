@@ -6,13 +6,15 @@ namespace PizzaAPI.Models
 {
     public class Order
     {
+        public Order() { }
+
         public Order(Order order)
         {
             if (order != null)
             {
                 List<OrderItem> orderItems = new List<OrderItem>();
 
-                if (order.OrderItems != null && order.OrderItems.Count > 0)
+                if (order.OrderItems.Count > 0)
                 {
                     foreach (OrderItem item in order.OrderItems)
                     {
@@ -35,20 +37,11 @@ namespace PizzaAPI.Models
 
         [Key]
         public int OrderId { get; set; }
-
         public virtual List<OrderItem> OrderItems { get; set; }
-
         public string UserId { get; set; }
-
-        [DataType(DataType.Currency)]
         public Decimal Price { get; set; }
-
-        [DataType(DataType.Currency)]
         public Decimal Discount { get; set; }
-
         public string CurrentVoucher { get; set; }
-
         public bool Delivery { get; set; }
-
     }
 }

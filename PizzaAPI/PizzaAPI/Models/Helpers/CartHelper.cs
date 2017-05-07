@@ -12,7 +12,7 @@ namespace PizzaAPI.Models.Helpers
 
         public static void ResetCart(Order cart)
         {
-            cart = new Order(null);
+            cart = new Order();
         }
 
         public static void Add(int pizzaId, string selectedToppingString, Order cart)

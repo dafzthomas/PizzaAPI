@@ -1,7 +1,7 @@
 var app = angular.module("app", []);
 
 app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
-    $scope.currentUser = {};
+    $scope.currentUser = JSON.parse(window.localStorage.getItem("currentUser")) || {};
     $scope.apiURL = window.location.protocol + '//' + window.location.hostname + ':9180';
 
     $scope.loginUserModel = {
@@ -20,6 +20,18 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         submitted: false
     }
 
+    $scope.pizzas = [];
+
+    function init() {
+        $http.get($scope.apiURL + '/api/v1/Pizzas').then(function (response) {
+            $scope.pizzas = response.data;
+
+            console.log(response);
+        });
+        $scope.getOrderHistory();
+    }
+    window.onload = init;
+
 
     $scope.login = function () {
         $http({
@@ -31,6 +43,9 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
             },
         }).then(function (response) {
             $scope.currentUser = response.data;
+            $scope.getOrderHistory();
+
+            window.localStorage.setItem("currentUser", JSON.stringify($scope.currentUser));
         });
     };
 
@@ -38,9 +53,13 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         $http({
             method: 'POST',
             url: $scope.apiURL + '/api/Account/Logout',
-            headers: {},
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: $scope.currentUser.access_token ? $scope.currentUser.token_type + ' ' + $scope.currentUser.access_token : ""
+            },
         }).then(function () {
             $scope.currentUser = {};
+            window.localStorage.setItem("currentUser", JSON.stringify({}));
         });
     };
 
@@ -60,14 +79,22 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         });
     };
 
+    $scope.getOrderHistory = function () {
+        if ($scope.currentUser.access_token) {
+            $http({
+                method: 'GET',
+                url: $scope.apiURL + '/api/v1/Orders',
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: $scope.currentUser.access_token ? $scope.currentUser.token_type + ' ' + $scope.currentUser.access_token : ""
+                },
+            }).then(function (response) {
+                console.log({ response });
 
-    $scope.pizzas = [];
-
-    $http.get($scope.apiURL + '/api/Pizzas').then(function (response) {
-        $scope.pizzas = response.data;
-
-        console.log(response);
-    });
+                $scope.currentUser.orders = response.data;
+            });
+        }
+    }
 
     $scope.addToCart = function (pizza) {
         console.log({ pizza })
@@ -84,7 +111,7 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
 
         $http({
             method: 'POST',
-            url: $scope.apiURL + '/api/AddToCart',
+            url: $scope.apiURL + '/api/v1/AddToCart',
             data: parameter,
             headers: {
                 "Content-Type": "application/json",
@@ -113,7 +140,7 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
 
         $http({
             method: 'PUT',
-            url: $scope.apiURL + '/api/RemoveFromCart',
+            url: $scope.apiURL + '/api/v1/RemoveFromCart',
             data: parameter,
             headers: {
                 "Content-Type": "application/json",
@@ -138,7 +165,7 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
 
         $http({
             method: 'POST',
-            url: $scope.apiURL + '/api/SubmitOrder',
+            url: $scope.apiURL + '/api/v1/SubmitOrder',
             data: parameter,
             headers: {
                 "Content-Type": "application/json",
@@ -147,9 +174,10 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         }).then(function success(response) {
             console.log({ success: response });
 
-            // $scope.state.completedOrder = response.data;
+            $scope.state.completedOrder = response.data;
 
-            // $scope.state.submitted = true;
+            $scope.checkout = false;
+            $scope.state.submitted = true;
         }, function failure(response) {
             console.log({ error: response });
 
