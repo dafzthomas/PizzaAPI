@@ -299,17 +299,14 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
                 "Content-Type": "application/json",
                 Authorization: $scope.currentUser.access_token ? $scope.currentUser.token_type + ' ' + $scope.currentUser.access_token : ""
             },
-        }).then(function success(response) {
+        }).then(function (response) {
             console.log({ success: response });
 
             $scope.state.completedOrder = response.data;
 
-            $scope.checkout = false;
+            $scope.state.checkout = false;
             $scope.state.submitted = true;
-        }, function failure(response) {
-            console.log({ error: response });
-
-            $scope.errorMessage = response.data.Message;
+            $scope.resetCart();
         });
     };
 
