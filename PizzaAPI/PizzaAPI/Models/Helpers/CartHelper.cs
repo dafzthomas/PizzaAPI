@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -15,47 +16,56 @@ namespace PizzaAPI.Models.Helpers
             cart = new Order();
         }
 
-        public static void Add(int pizzaId, string selectedToppingString, Order cart)
+        public static void Add(int pizzaId, List<int> extraToppings, Order order)
         {
-            OrderItem order = new OrderItem();
+            
 
-            order.Pizza = db.Pizzas.Find(pizzaId);
+            OrderItem orderItem = new OrderItem();
+            orderItem.Pizza = db.Pizzas.Find(pizzaId);
+            orderItem.Price = orderItem.Pizza.Price;
 
-            order.Price += order.Pizza.Price;
-
-            if (selectedToppingString != null)
+            if (extraToppings != null)
             {
-                var selectedToppings = selectedToppingString.Split(',');
-
-                foreach (string toppingId in selectedToppings)
+                foreach (int toppingId in extraToppings)
                 {
-                    Topping topping = db.Toppings.Find(Convert.ToInt32(toppingId));
-
-                    order.ExtraToppings.Add(topping);
-                    order.Price += topping.Price;
+                    Topping topping = db.Toppings.Find(toppingId);
+                    orderItem.ExtraToppings.Add(topping);
+                    orderItem.Price += topping.Price;
                 }
             }
 
-            cart.OrderItems.Add(order);
+            order.OrderItems.Add(orderItem);
+            order.Price += orderItem.Price;
 
-            AddDealToCart("", cart);
+            if (order.CurrentVoucher.Length > 0)
+            {
+                AddDealToCart(order.CurrentVoucher, order);
+            }
         }
 
-        public static void Remove(Pizza pizza, Order cart)
+        public static void Remove(int orderItemId, Order order)
         {
-            var itemToRemove = cart.OrderItems.Single(r => r.Pizza.PizzaId == pizza.PizzaId);
+            string voucher = order.CurrentVoucher;
 
-            cart.OrderItems.Remove(itemToRemove);
+            var itemToRemove = order.OrderItems.Single(r => r.OrderItemId == orderItemId);
+
+            order.OrderItems.Remove(itemToRemove);
+            order.Price -= itemToRemove.Price;
+
+            CartHelper.AddDealToCart(voucher, order);
         }
 
         public static void Submit(string userId, Order cart)
         {
             cart.UserId = userId;
+            cart.Price = 0;
 
             foreach (var item in cart.OrderItems)
             {
                 cart.Price += item.Price;
             }
+
+            //db.Entry(cart).State = EntityState.Detached;
 
             db.Orders.Add(cart);
             db.SaveChanges();
@@ -94,6 +104,11 @@ namespace PizzaAPI.Models.Helpers
 
                         cart.Discount = lowestCost;
                         cart.CurrentVoucher = voucher;
+                    } else
+                    {
+                        cart.Discount = 0;
+                        cart.CurrentVoucher = "";
+                        break;
                     }
 
                     break;
@@ -104,6 +119,11 @@ namespace PizzaAPI.Models.Helpers
 
                         cart.Discount = lowestCost;
                         cart.CurrentVoucher = voucher;
+                    } else
+                    {
+                        cart.Discount = 0;
+                        cart.CurrentVoucher = "";
+                        break;
                     }
 
                     break;
@@ -117,6 +137,11 @@ namespace PizzaAPI.Models.Helpers
 
                         cart.Discount = discount;
                         cart.CurrentVoucher = voucher;
+                    } else
+                    {
+                        cart.Discount = 0;
+                        cart.CurrentVoucher = "";
+                        break;
                     }
                     break;
                 case "2LARGECOLL":
@@ -129,6 +154,11 @@ namespace PizzaAPI.Models.Helpers
 
                         cart.Discount = discount;
                         cart.CurrentVoucher = voucher;
+                    } else
+                    {
+                        cart.Discount = 0;
+                        cart.CurrentVoucher = "";
+                        break;
                     }
                     break;
                 case "2MEDIUMCOLL":
@@ -141,6 +171,11 @@ namespace PizzaAPI.Models.Helpers
 
                         cart.Discount = discount;
                         cart.CurrentVoucher = voucher;
+                    } else
+                    {
+                        cart.Discount = 0;
+                        cart.CurrentVoucher = "";
+                        break;
                     }
                     break;
                 case "2SMALLCOLL":
@@ -153,6 +188,11 @@ namespace PizzaAPI.Models.Helpers
 
                         cart.Discount = discount;
                         cart.CurrentVoucher = voucher;
+                    } else
+                    {
+                        cart.Discount = 0;
+                        cart.CurrentVoucher = "";
+                        break;
                     }
                     break;
                 default:

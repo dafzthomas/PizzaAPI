@@ -16,8 +16,9 @@ namespace PizzaAPI.Models.Helpers
         //}
 
         public int pizzaId { get; set; }
-        public List<Topping> extraToppings { get; set; }
+        public List<int> extraToppings { get; set; }
         public Order order { get; set; }
         public OrderItem orderItem { get; set; }
+        public string voucherCode { get; set; }
     }
 }

@@ -15,6 +15,7 @@
             padding: 0;
             margin: 0;
             box-sizing: border-box;
+            font-family: "Helvetica Neue", Helvetica, sans-serif;
         }
 
         ul {
@@ -97,53 +98,100 @@
         <h1>Pizzas</h1>
         <div class="pizzas">
             <div ng-repeat="pizza in pizzas">
-                <h2>{{ pizza.Name }} ({{ pizza.Size }})</h1>
+                <h2>{{ pizza.Name }}</h1>
 
                     <h3>Toppings:</h3>
                     <ul>
                         <li ng-repeat="topping in pizza.Toppings">{{ topping.Name }}</li>
                     </ul>
 
-                    <p>Price: {{ pizza.Price | currency }}</p>
+                    <h3>Size:</h3>
 
-                    <button ng-click="addToCart(pizza)">Add to Cart</button>
+                    <div ng-repeat="pizzaSize in allPizzas" ng-if="pizzaSize.Name == pizza.Name">
+                        <input ng-click="selectedPizzaSize(pizzaSize, pizza)" name="{{pizza.Name}}" type="radio" />
+                        <label>{{ pizzaSize.Size }} - {{ pizzaSize.Price | currency }}</label>
+                    </div>
+
+                    <div ng-if="pizza.CurrentSize">
+                        <h3>Extra Toppings:</h3>
+                        <div ng-repeat="extraTopping in toppings" ng-if="extraTopping.Size == pizza.CurrentSize">
+                            <input ng-change="toppingChanged(value, pizza, extraTopping.ToppingId)" ng-model="value" name="{{ extraTopping.Name + extraTopping.Size }}"
+                                type="checkbox" />
+                            <label for="{{ extraTopping.Name + extraTopping.Size }}">{{ extraTopping.Name }} - {{ extraTopping.Price | currency }}</label>
+                        </div>
+
+                        <button ng-click="addToCart(pizza)">Add to Cart</button>
+                    </div>
+
+
             </div>
         </div>
     </div>
 
     <div class="order" ng-if="!state.checkout">
-        <h2>Order</h2>
+        <h2>Current Order</h2>
+        <button ng-click="resetCart()">Reset Cart</button>
 
         <div class="orderItems" ng-if="cart">
             <div ng-repeat="item in cart.OrderItems">
-                <h3>Pizza: {{ item.Pizza.Name }}</h3>
+                <h3>Pizza: {{ item.Pizza.Name }} - {{ item.Pizza.Price | currency }}</h3>
                 <p>Size: {{ item.Pizza.Size }}</p>
                 <ul>
+                    <h4>Toppings</h4>
                     <li ng-repeat="topping in item.Pizza.Toppings">{{ topping.Name }}</li>
+                </ul>
+                <ul>
+                    <h4>Extra Toppings</h4>
+                    <li ng-repeat="topping in item.ExtraToppings">{{ topping.Name }} - {{ topping.Price | currency }}</li>
                 </ul>
                 <p>Price: {{ item.Price | currency }}</p>
                 <button ng-click="removeFromCart(item)">Remove from cart</button>
             </div>
 
-            <h3>Total: {{ cart.Price | currency }}</h3>
+            <input ng-model="cart.CurrentVoucher" type="text" placeholder="Enter voucher code" />
+            <button ng-click="applyVoucher()">Apply voucher</button>
+
+            <h4>Voucher:</h4>
+            <p ng-if="cart.Discount < 1">No voucher</p>
+            <p ng-if="cart.Discount > 0">{{ cart.CurrentVoucher }} - {{ cart.Discount | currency }} discount.</p>
+
+            <h3 ng-if="cart.Discount < 1">Total: {{ cart.Price | currency }}</h3>
+            <h3 ng-if="cart.Discount > 0">Total:
+                <s>{{ cart.Price | currency }}</s> {{ cart.Price - cart.Discount | currency }}</h3>
+
+            <div>
+                <input ng-model="cart.Delivery" name="delivery" type="checkbox" />
+                <label>Delivery</label>
+            </div>
 
             <button ng-click="state.checkout = true" ng-if="cart.OrderItems.length > 0">Checkout</button>
         </div>
-
-        <button ng-if="!cart">New order</button>
     </div>
 
     <div ng-if="!state.checkout && currentUser.access_token">
         <h1>Order History</h1>
         <div class="orderHistoryItem" ng-repeat="order in currentUser.orders">
-            <h2>Order: {{ order.OrderId }}</h1>
+            <h2>Order: {{ order.OrderId }}</h2>
 
-                <h3>Order Items:</h3>
-                <div class="orderItem" ng-repeat="orderItem in order.OrderItems">
-                    <p>Pizza: {{ orderItem.Pizza.Name}}</p>
-                </div>
+            <h3>Order Items:</h3>
+            <div class="orderItem" ng-repeat="orderItem in order.OrderItems">
+                <h4>Pizza</h4>
+                <p>{{ orderItem.Pizza.Name}} ({{ orderItem.Pizza.Size}}) - {{ orderItem.Price | currency }}</p>
+                <ul>
+                    <h4>Extra Toppings:</h4>
+                    <li ng-repeat="topping in orderItem.ExtraToppings">{{ topping.Name }} - {{ topping.Price | currency }}</li>
+                    <li ng-if="orderItem.ExtraToppings.length < 1">None selected</li>
+                </ul>
+            </div>
 
-                <h3>Price: {{ order.Price | currency }}</h3>
+            <h4>Voucher:</h4>
+            <p ng-if="order.Discount < 1">No voucher</p>
+            <p ng-if="order.Discount > 0">{{ order.CurrentVoucher }} - {{ order.Discount | currency }} discount.</p>
+
+            <h3 ng-if="order.Discount < 1">Total: {{ order.Price | currency }}</h3>
+            <h3 ng-if="order.Discount > 0">Total:
+                <s>{{ order.Price | currency }}</s> {{ order.Price - order.Discount | currency }}</h3>
+            <button ng-click="reorder(order)">Reorder</button>
         </div>
     </div>
 
@@ -160,6 +208,14 @@
                 <p>Price: {{ item.Price | currency }}</p>
             </div>
         </div>
+
+        <h4>Voucher:</h4>
+        <p ng-if="cart.Discount < 1">No voucher</p>
+        <p ng-if="cart.Discount > 0">{{ cart.CurrentVoucher }} - {{ cart.Discount | currency }} discount.</p>
+
+        <h3 ng-if="cart.Discount < 1">Total: {{ cart.Price | currency }}</h3>
+        <h3 ng-if="cart.Discount > 0">Total:
+            <s>{{ cart.Price | currency }}</s> {{ cart.Price - cart.Discount | currency }}</h3>
 
         <h3>Total: {{ cart.Price | currency }}</h3>
 

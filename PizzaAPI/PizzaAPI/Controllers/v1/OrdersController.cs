@@ -1,10 +1,6 @@
 ﻿using PizzaAPI.Models;
 using PizzaAPI.Models.Helpers;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Net;
-using System.Net.Http;
 using System.Web.Http;
 using System.Web.Http.Description;
 
@@ -32,5 +28,26 @@ namespace PizzaAPI.Controllers
             }
             return Ok(orders);
         }
+
+        [Authorize]
+        [HttpPost]
+        [Route("api/v1/SubmitOrder")]
+        [ResponseType(typeof(Order))]
+        public IHttpActionResult SubmitOrder(ClientViewModel clientModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            Order order = new Order(clientModel.order);
+            string userId = RequestContext.Principal.Identity.Name;
+
+            CartHelper.Submit(userId, order);
+
+            return Ok(order);
+        }
+
+
     }
 }

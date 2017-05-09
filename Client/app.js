@@ -2,36 +2,145 @@ var app = angular.module("app", []);
 
 app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
     $scope.currentUser = JSON.parse(window.localStorage.getItem("currentUser")) || {};
+    $scope.cart = JSON.parse(window.localStorage.getItem("pizzaCart")) || {};
     $scope.apiURL = window.location.protocol + '//' + window.location.hostname + ':9180';
 
     $scope.loginUserModel = {
         username: "",
         password: ""
-    }
+    };
 
     $scope.registerUserModel = {
         username: "",
         password: "",
         confirmPassword: ""
-    }
+    };
 
     $scope.state = {
         checkout: false,
         submitted: false
-    }
+    };
 
     $scope.pizzas = [];
+    $scope.toppings = [];
 
     function init() {
         $http.get($scope.apiURL + '/api/v1/Pizzas').then(function (response) {
-            $scope.pizzas = response.data;
+            const data = response.data;
+            let pizzaNames = [];
 
-            console.log(response);
+            data.map(function (item) {
+                if (!pizzaNames.includes(item.Name)) {
+                    pizzaNames.push(item.Name);
+                    $scope.pizzas.push(item);
+                }
+            });
+
+            $scope.allPizzas = data;
+            console.log("$scope.pizzas", $scope.pizzas);
+            console.log("$scope.allPizzas", $scope.allPizzas);
         });
+
+        $http.get($scope.apiURL + '/api/v1/Toppings').then(function (response) {
+            $scope.toppings = response.data;
+
+            console.log("$scope.toppings", $scope.toppings);
+        });
+
         $scope.getOrderHistory();
     }
     window.onload = init;
 
+    $scope.applyTheCart = function (cart) {
+        $scope.cart = cart;
+        window.localStorage.setItem("pizzaCart", JSON.stringify(cart));
+    }
+
+    $scope.applyVoucher = function () {
+        console.log('applyVoucher');
+        var data = {
+            order: $scope.cart,
+            voucherCode: $scope.cart.CurrentVoucher
+        };
+
+        var parameter = JSON.stringify(data);
+
+        $http({
+            method: 'PUT',
+            url: $scope.apiURL + '/api/v1/AddCoupon',
+            data: parameter,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: $scope.currentUser.access_token ? $scope.currentUser.token_type + ' ' + $scope.currentUser.access_token : ""
+            },
+        }).then(function (response) {
+            console.log({ response });
+
+            $scope.applyTheCart(response.data);
+        });
+    };
+
+    $scope.forThisPizza = function (topping, pizza) {
+        console.log({ topping });
+        console.log({ pizza });
+
+
+        if (topping.Size == pizza.Size) {
+            return true;
+        }
+
+        return false;
+    };
+
+    $scope.toppingChanged = function (value, pizza, toppingId) {
+        console.log({
+            value: value,
+            pizza: pizza,
+            toppingId: toppingId
+        });
+
+        if (pizza.ExtraToppings == undefined) {
+            pizza.ExtraToppings = [];
+        }
+
+        if (value) {
+            pizza.ExtraToppings.push(toppingId);
+        } else if (!value) {
+            let index = pizza.ExtraToppings.indexOf(toppingId);
+
+            if (index > -1) {
+                pizza.ExtraToppings.splice(index, 1);
+            }
+
+        }
+    };
+
+    $scope.reorder = function (order) {
+        order.CurrentVoucher = "";
+        order.Discount = 0;
+        $scope.applyTheCart(order);
+    };
+
+    $scope.selectedPizzaSize = function (pizzaSize, normalPizza) {
+        normalPizza.CurrentSize = pizzaSize.Size;
+        normalPizza.PizzaId = pizzaSize.PizzaId;
+        normalPizza.ExtraToppings = [];
+    };
+
+    $scope.resetCart = function () {
+        $http({
+            method: 'DELETE',
+            url: $scope.apiURL + '/api/v1/ResetCart',
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: $scope.currentUser.access_token ? $scope.currentUser.token_type + ' ' + $scope.currentUser.access_token : ""
+            },
+        }).then(function (response) {
+            console.log({ response });
+
+            $scope.applyTheCart(response.data);
+        });
+    };
 
     $scope.login = function () {
         $http({
@@ -94,14 +203,14 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
                 $scope.currentUser.orders = response.data;
             });
         }
-    }
+    };
 
     $scope.addToCart = function (pizza) {
         console.log({ pizza })
 
         var data = {
             pizzaId: pizza.PizzaId,
-            extraToppings: null,
+            extraToppings: pizza.ExtraToppings,
             order: $scope.cart
         };
 
@@ -120,7 +229,7 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         }).then(function (response) {
             console.log({ response });
 
-            $scope.cart = response.data;
+            $scope.applyTheCart(response.data);
         });
 
         console.log($scope.cart);
@@ -139,7 +248,7 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         var parameter = JSON.stringify(data);
 
         $http({
-            method: 'PUT',
+            method: 'DELETE',
             url: $scope.apiURL + '/api/v1/RemoveFromCart',
             data: parameter,
             headers: {
@@ -149,16 +258,13 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         }).then(function (response) {
             console.log({ response });
 
-            $scope.cart = response.data;
+            $scope.applyTheCart(response.data);
         });
     };
 
     $scope.submitOrder = function () {
         var data = {
-            pizzaId: null,
-            extraToppings: null,
-            order: $scope.cart,
-            orderItem: null
+            order: $scope.cart
         };
 
         var parameter = JSON.stringify(data);

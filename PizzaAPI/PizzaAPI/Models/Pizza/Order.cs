@@ -14,7 +14,7 @@ namespace PizzaAPI.Models
             {
                 List<OrderItem> orderItems = new List<OrderItem>();
 
-                if (order.OrderItems.Count > 0)
+                if (order.OrderItems != null)
                 {
                     foreach (OrderItem item in order.OrderItems)
                     {

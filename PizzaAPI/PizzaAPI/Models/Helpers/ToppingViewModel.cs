@@ -23,5 +23,7 @@ namespace PizzaAPI.Models.Helpers
         public string Size { get; set; }
 
         public Decimal Price { get; set; }
+
+        public virtual List<Pizza> Pizzas { get; set; }
     }
 }

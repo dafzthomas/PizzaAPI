@@ -218,8 +218,10 @@
     <Compile Include="App_Start\Startup.Auth.cs" />
     <Compile Include="App_Start\WebApiConfig.cs" />
     <Compile Include="Controllers\AccountController.cs" />
+    <Compile Include="Controllers\v1\CartController.cs" />
     <Compile Include="Controllers\v1\OrdersController.cs" />
     <Compile Include="Controllers\v1\PizzasController.cs" />
+    <Compile Include="Controllers\v1\ToppingsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>

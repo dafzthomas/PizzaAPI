@@ -53,7 +53,6 @@ namespace PizzaAPI.Models
             Pizza = orderItem.Pizza;
             UserId = orderItem.UserId;
             Price = orderItem.Price;
-
         }
 
         [Key]
@@ -63,7 +62,7 @@ namespace PizzaAPI.Models
 
         public virtual Pizza Pizza { get; set; }
 
-        public List<Topping> ExtraToppings { get; set; }
+        public virtual List<Topping> ExtraToppings { get; set; }
 
         public int UserId { get; set; }
 
