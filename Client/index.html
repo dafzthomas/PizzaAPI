@@ -129,7 +129,7 @@
     </div>
 
     <div class="order" ng-if="!state.checkout">
-        <h2>Current Order</h2>
+        <h2>Cart</h2>
         <button ng-click="resetCart()">Reset Cart</button>
 
         <div class="orderItems" ng-if="cart">
@@ -160,7 +160,7 @@
                 <s>{{ cart.Price | currency }}</s> {{ cart.Price - cart.Discount | currency }}</h3>
 
             <div>
-                <input ng-model="cart.Delivery" name="delivery" type="checkbox" />
+                <input ng-change="applyDelivery(cart.Delivery)" ng-model="cart.Delivery" name="delivery" type="checkbox" />
                 <label>Delivery</label>
             </div>
 

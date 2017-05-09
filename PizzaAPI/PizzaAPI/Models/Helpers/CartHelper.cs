@@ -18,8 +18,6 @@ namespace PizzaAPI.Models.Helpers
 
         public static void Add(int pizzaId, List<int> extraToppings, Order order)
         {
-            
-
             OrderItem orderItem = new OrderItem();
             orderItem.Pizza = db.Pizzas.Find(pizzaId);
             orderItem.Price = orderItem.Pizza.Price;
@@ -60,12 +58,27 @@ namespace PizzaAPI.Models.Helpers
             cart.UserId = userId;
             cart.Price = 0;
 
-            foreach (var item in cart.OrderItems)
+            foreach (OrderItem orderItem in cart.OrderItems)
             {
-                cart.Price += item.Price;
-            }
+                orderItem.Price = 0;
+                Pizza pizza = db.Pizzas.Find(orderItem.Pizza.PizzaId);
+                orderItem.Pizza = pizza;
 
-            //db.Entry(cart).State = EntityState.Detached;
+                orderItem.Price += pizza.Price;
+
+                List<Topping> tempExtraToppings = new List<Topping>();
+                foreach(Topping extraTopping in orderItem.ExtraToppings)
+                {
+                    Topping topping = db.Toppings.Find(extraTopping.ToppingId);
+                    tempExtraToppings.Add(topping);
+
+                    orderItem.Price += topping.Price;
+                }
+
+                orderItem.ExtraToppings = tempExtraToppings;
+
+                cart.Price += orderItem.Pizza.Price;
+            }
 
             db.Orders.Add(cart);
             db.SaveChanges();

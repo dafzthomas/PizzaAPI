@@ -127,6 +127,28 @@ app.controller('MainController', ['$scope', '$http', function ($scope, $http) {
         normalPizza.ExtraToppings = [];
     };
 
+    $scope.applyDelivery = function (value) {
+        var data = {
+            order: $scope.cart
+        };
+
+        var parameter = JSON.stringify(data);
+
+        $http({
+            method: 'PUT',
+            url: $scope.apiURL + '/api/v1/ApplyDelivery',
+            data: parameter,
+            headers: {
+                "Content-Type": "application/json",
+                Authorization: $scope.currentUser.access_token ? $scope.currentUser.token_type + ' ' + $scope.currentUser.access_token : ""
+            },
+        }).then(function (response) {
+            console.log({ response });
+
+            $scope.applyTheCart(response.data);
+        });
+    }
+
     $scope.resetCart = function () {
         $http({
             method: 'DELETE',
